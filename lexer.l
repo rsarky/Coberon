@@ -2,7 +2,11 @@
 #include<stdio.h>
 #include<string.h>
 #include "parser.tab.h"
+
+int yyerror(char* s, ...);
 %}
+
+%option noyywrap
 
 %%
 "." |
@@ -49,9 +53,10 @@ PROCEDURE { return PROCEDURE; }
 BEGIN { return _BEGIN; }
 MODULE { return MODULE; }
 
-[a-zA-Z][a-zA-Z0-9]* { strcpy(yylval.strval, yytext); return ID; } 
+[a-zA-Z][a-zA-Z0-9]* { yylval.strval = yytext; return ID; } 
 [0-9]+ { yylval.intval = atoi(yytext); return VAL; }
 
+"(*"[.\n]*"*)"
 [ \t\n]
-. { yyerror("Invalid Character: %c", *yytext); }
+. { yyerror("Invalid Character\n"); }
 %%
