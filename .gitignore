@@ -1,0 +1,5 @@
+*.swp
+.ycm_extra_conf.py
+lex.yy.c
+*.tab.c
+*.tab.h
