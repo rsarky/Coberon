@@ -5,3 +5,5 @@ lex.yy.c
 *.tab.h
 in.txt
 *.out
+parser
+notes.txt

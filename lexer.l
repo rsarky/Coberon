@@ -24,13 +24,14 @@ int yyerror(char* s, ...);
 "-" { return MINUS; }
 "&" { return AND; }
 
-"=" { yylval.subtok = 0; return CMP; }
+"=" { return EQUALS; }
 "#" { yylval.subtok = 1; return CMP; }
 "<" { yylval.subtok = 2; return CMP; }
 "<=" { yylval.subtok = 3; return CMP; }
 ">" { yylval.subtok = 4; return CMP; }
 ">=" { yylval.subtok = 5; return CMP; }
 
+":=" { return ASSIGN; } 
 DIV { return DIV; }
 MOD { return MOD; }
 OR { return OR; }

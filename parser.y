@@ -15,7 +15,7 @@ int yylex();
 %token <strval> ID
 %token <intval> VAL 
 %token <subtok> CMP
-%token MULT DIV MOD AND OR PLUS MINUS
+%token MULT DIV MOD AND OR PLUS MINUS EQUALS ASSIGN
 %token OF THEN DO UNTIL END ELSE ELSIF IF WHILE REPEAT
 %token ARRAY RECORD CONST TYPE VAR PROCEDURE _BEGIN MODULE
 
@@ -27,10 +27,114 @@ module: MODULE ID ';' declarations
       | END ID '.'
       ;
 
-declarations:
+declarations: 
+            | CONST assignList
+            | TYPE typeList
+            | VAR varList
+            | procedureDeclarations
             ;
-statementSequence:
+assignList:
+          | assignList ID ASSIGN expression ';'
+          ;
+typeList:
+        | typeList ID ASSIGN type ';'
+        ;
+varList:
+       | varList idList ':' type ';' 
+       ;
+procedureDeclarations:
+                     | procedureDeclaration ';'
+                     ;
+expression: simpleExpression
+          | simpleExpression CMP simpleExpression
+          | simpleExpression EQUALS simpleExpression 
+          ;
+simpleExpression: term termList
+                | PLUS term termList
+                | MINUS term termList
+                ;
+termList:
+        | termList PLUS term
+        | termList MINUS term
+        | termList OR term
+        ;
+term: factor factorList
+    ;
+factorList:
+          | factorList MULT factor
+          | factorList DIV factor
+          | factorList MOD factor
+          | factorList AND factor
+          ;
+factor: ID selector
+      | VAL
+      | '(' expression ')'
+      | '~' factor
+      ;
+selector:
+        | selector '.' ID
+        | selector '[' expression ']'
+        ;
+idList: ID ids
+      ;
+ids:
+   | ',' ID ids
+   ;
+procedureDeclaration: procedureHeading ';' procedureBody
+                    ;
+procedureHeading: PROCEDURE ID
+                | PROCEDURE ID formalParameters
+                ;
+formalParameters: '(' ')'
+                | '(' fpSection fpSectionList ')'
+                ;
+fpSectionList:
+             | ';' fpSection fpSectionList
+             ;
+fpSection: VAR idList ':' type
+         | idList ':' type
+         ;
+type: ID
+    | arrayType
+    | recordType
+    ;
+arrayType: ARRAY expression OF type
+         ;
+recordType: RECORD fieldList fields END
+          ;
+fields:
+      | ';' fieldList fields
+      ;
+fieldList:
+         | idList ':' type
+         ;
+procedureBody: declarations END ID
+             | declarations BEGIN statementSequence END ID
+             ;
+statementSequence: statement statements
                  ;
+statements:
+          | ';' statement statements
+          ;
+statement:
+         | assignment
+         | procedureCall
+         | ifStatement
+         | whileStatement
+         ;
+assignment: ID selector ASSIGN expression
+          ;
+procedureCall: ID selector
+             | ID selector actualParameters
+             ;
+actualParameters: '(' ')'
+                | '(' expression expressionList ')'
+                ;
+expressionList: 
+              | ',' expression expressionList
+              ;
+TODO ifStatement: IF expression THEN statementSequence
+              
 %%
 
 int yyerror(char* s, ...) {
