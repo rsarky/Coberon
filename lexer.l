@@ -4,6 +4,9 @@
 #include "parser.tab.h"
 
 int yyerror(char* s, ...);
+void print(char *s) {
+  printf("%s\n", s);
+}
 %}
 
 %option noyywrap
@@ -17,45 +20,45 @@ int yyerror(char* s, ...);
 "(" |
 "[" |
 "~" |
-";" { return yytext[0]; }
+";" { print(yytext); return yytext[0]; }
 
-"*" { return MULT; }
-"+" { return PLUS; }
-"-" { return MINUS; }
-"&" { return AND; }
+"*" { print(yytext); return MULT; }
+"+" { print(yytext); return PLUS; }
+"-" { print(yytext); return MINUS; }
+"&" { print(yytext); return AND; }
 
-"=" { return EQUALS; }
-"#" { yylval.subtok = 1; return CMP; }
-"<" { yylval.subtok = 2; return CMP; }
-"<=" { yylval.subtok = 3; return CMP; }
-">" { yylval.subtok = 4; return CMP; }
-">=" { yylval.subtok = 5; return CMP; }
+"=" { print(yytext); return EQUALS; }
+"#" { print(yytext); yylval.subtok = 1; return CMP; }
+"<" { print(yytext); yylval.subtok = 2; return CMP; }
+"<=" { print(yytext); yylval.subtok = 3; return CMP; }
+">" { print(yytext); yylval.subtok = 4; return CMP; }
+">=" { print(yytext); yylval.subtok = 5; return CMP; }
 
-":=" { return ASSIGN; } 
-DIV { return DIV; }
-MOD { return MOD; }
-OR { return OR; }
-OF { return OF; }
-THEN { return THEN; }
-DO { return DO; }
-UNTIL { return UNTIL; }
-END { return END; }
-ELSE { return ELSE; }
-ELSIF { return ELSIF; }
-IF { return IF; }
-WHILE { return WHILE; }
-REPEAT { return REPEAT; }
-ARRAY { return ARRAY; }
-RECORD { return RECORD; }
-CONST { return CONST; }
-TYPE { return TYPE; }
-VAR { return VAR; }
-PROCEDURE { return PROCEDURE; }
-BEGIN { return _BEGIN; }
-MODULE { return MODULE; }
+":=" { print(yytext); return ASSIGN; } 
+DIV { print(yytext); return DIV; }
+MOD { print(yytext); return MOD; }
+OR { print(yytext); return OR; }
+OF { print(yytext); return OF; }
+THEN { print(yytext); return THEN; }
+DO { print(yytext); return DO; }
+UNTIL { print(yytext); return UNTIL; }
+END { print(yytext); return END; }
+ELSE { print(yytext); return ELSE; }
+ELSIF { print(yytext); return ELSIF; }
+IF { print(yytext); return IF; }
+WHILE { print(yytext); return WHILE; }
+REPEAT { print(yytext); return REPEAT; }
+ARRAY { print(yytext); return ARRAY; }
+RECORD { print(yytext); return RECORD; }
+CONST { print(yytext); return CONST; }
+TYPE { print(yytext); return TYPE; }
+VAR { print(yytext); return VAR; }
+PROCEDURE { print(yytext); return PROCEDURE; }
+BEGIN { print(yytext); return _BEGIN; }
+MODULE { print(yytext); return MODULE; }
 
-[a-zA-Z][a-zA-Z0-9]* { yylval.strval = yytext; return ID; } 
-[0-9]+ { yylval.intval = atoi(yytext); return VAL; }
+[a-zA-Z][a-zA-Z0-9]* { print(yytext); yylval.strval = yytext; return ID; } 
+[0-9]+ { print(yytext); yylval.intval = atoi(yytext); return VAL; }
 
 "(*"[.\n]*"*)"
 [ \t\n]

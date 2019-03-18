@@ -19,6 +19,8 @@ int yylex();
 %token OF THEN DO UNTIL END ELSE ELSIF IF WHILE REPEAT
 %token ARRAY RECORD CONST TYPE VAR PROCEDURE _BEGIN MODULE
 
+//TODO: Precedence and associativities.
+%left PLUS 
 %start module
 
 %%
@@ -27,12 +29,18 @@ module: MODULE ID ';' declarations
       | END ID '.'
       ;
 
-declarations: 
-            | CONST assignList
-            | TYPE typeList
-            | VAR varList
-            | procedureDeclarations
+declarations: constants types vars
+//            | procedureDeclarations
             ;
+constants: 
+          | CONST assignList
+          ;
+types:
+     | TYPE typeList
+     ;
+vars:
+    | VAR varList
+    ;
 assignList:
           | assignList ID ASSIGN expression ';'
           ;
@@ -109,18 +117,14 @@ fieldList:
          | idList ':' type
          ;
 procedureBody: declarations END ID
-             | declarations BEGIN statementSequence END ID
+             | declarations _BEGIN statementSequence END ID
              ;
-statementSequence: statement statements
+statementSequence: 
+                 | statementSequence statement ';'
                  ;
-statements:
-          | ';' statement statements
-          ;
-statement:
+statement: 
          | assignment
-         | procedureCall
          | ifStatement
-         | whileStatement
          ;
 assignment: ID selector ASSIGN expression
           ;
@@ -133,8 +137,7 @@ actualParameters: '(' ')'
 expressionList: 
               | ',' expression expressionList
               ;
-TODO ifStatement: IF expression THEN statementSequence
-              
+
 %%
 
 int yyerror(char* s, ...) {
@@ -147,7 +150,6 @@ int main() {
   yyin = fopen("in.txt", "r");
   do {
     if(yyparse()) {
-      printf("failure");
       exit(0);
     }
   } while(!feof(yyin));
