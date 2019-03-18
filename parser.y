@@ -24,11 +24,11 @@ int yylex();
 %start module
 
 %%
-module: MODULE ID ';' declarations
-      | _BEGIN statementSequence END ID '.'
-      | END ID '.'
+module: MODULE ID ';' declarations _BEGIN statementSequence END ID '.'
+      | MODULE ID ';' declarations END ID '.' 
       ;
 
+// Note that order of declarations matter.
 declarations: constants types vars
 //            | procedureDeclarations
             ;
@@ -42,10 +42,10 @@ vars:
     | VAR varList
     ;
 assignList:
-          | assignList ID ASSIGN expression ';'
+          | assignList ID EQUALS expression ';'
           ;
 typeList:
-        | typeList ID ASSIGN type ';'
+        | typeList ID EQUALS type ';'
         ;
 varList:
        | varList idList ':' type ';' 
@@ -83,11 +83,9 @@ selector:
         | selector '.' ID
         | selector '[' expression ']'
         ;
-idList: ID ids
+idList: idList ',' ID
+      | ID
       ;
-ids:
-   | ',' ID ids
-   ;
 procedureDeclaration: procedureHeading ';' procedureBody
                     ;
 procedureHeading: PROCEDURE ID
@@ -125,7 +123,15 @@ statementSequence:
 statement: 
          | assignment
          | ifStatement
+         | whileStatement
          ;
+whileStatement: WHILE expression DO statementSequence END
+ifStatement: IF expression THEN statementSequence elseifs END 
+           | IF expression THEN statementSequence elseifs ELSE statementSequence END 
+           ;
+elseifs:
+       | elseifs ELSIF expression THEN statementSequence
+       ;
 assignment: ID selector ASSIGN expression
           ;
 procedureCall: ID selector
