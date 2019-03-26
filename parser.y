@@ -20,7 +20,7 @@ int yylex();
 %token ARRAY RECORD CONST TYPE VAR PROCEDURE _BEGIN MODULE
 
 //TODO: Precedence and associativities.
-%left PLUS 
+%left PLUS MINUS MULT DIV MOD AND OR
 %start module
 
 %%
@@ -29,8 +29,7 @@ module: MODULE ID ';' declarations _BEGIN statementSequence END ID '.'
       ;
 
 // Note that order of declarations matter.
-declarations: constants types vars
-//            | procedureDeclarations
+declarations: constants types vars procedureDeclarations
             ;
 constants: 
           | CONST assignList
@@ -51,7 +50,7 @@ varList:
        | varList idList ':' type ';' 
        ;
 procedureDeclarations:
-                     | procedureDeclaration ';'
+                     | procedureDeclarations procedureDeclaration ';'
                      ;
 expression: simpleExpression
           | simpleExpression CMP simpleExpression
@@ -92,11 +91,12 @@ procedureHeading: PROCEDURE ID
                 | PROCEDURE ID formalParameters
                 ;
 formalParameters: '(' ')'
-                | '(' fpSection fpSectionList ')'
+                | '(' fpSectionList ')'
                 ;
-fpSectionList:
-             | ';' fpSection fpSectionList
+fpSectionList: fpSection
+             | fpSectionList ';' fpSection 
              ;
+
 fpSection: VAR idList ':' type
          | idList ':' type
          ;
@@ -117,13 +117,14 @@ fieldList:
 procedureBody: declarations END ID
              | declarations _BEGIN statementSequence END ID
              ;
-statementSequence: 
-                 | statementSequence statement ';'
+statementSequence: statement 
+                 | statementSequence ';' statement
                  ;
 statement: 
          | assignment
          | ifStatement
          | whileStatement
+         | procedureCall
          ;
 whileStatement: WHILE expression DO statementSequence END
 ifStatement: IF expression THEN statementSequence elseifs END 
@@ -138,10 +139,10 @@ procedureCall: ID selector
              | ID selector actualParameters
              ;
 actualParameters: '(' ')'
-                | '(' expression expressionList ')'
+                | '(' expressionList ')'
                 ;
-expressionList: 
-              | ',' expression expressionList
+expressionList: expression
+              | expressionList ',' expression 
               ;
 
 %%
