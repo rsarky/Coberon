@@ -3,13 +3,17 @@
 #include<string.h>
 #include "parser.tab.h"
 
+int PRINTOKENS;
+
 int yyerror(char* s, ...);
 void print(char *s) {
-  printf("%s\n", s);
+  if(PRINTOKENS) {
+    printf("%d\t%s\n", yylineno, s);
+  }
 }
 %}
 
-%option noyywrap
+%option noyywrap yylineno
 
 %%
 "." |
@@ -27,7 +31,7 @@ void print(char *s) {
 "-" { print(yytext); return MINUS; }
 "&" { print(yytext); return AND; }
 
-"=" { print(yytext); return EQUALS; }
+"=" { print(yytext); return EQUALS; } // NOTE: = is handled as a special case.
 "#" { print(yytext); yylval.subtok = 1; return CMP; }
 "<" { print(yytext); yylval.subtok = 2; return CMP; }
 "<=" { print(yytext); yylval.subtok = 3; return CMP; }

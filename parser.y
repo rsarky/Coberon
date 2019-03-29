@@ -2,9 +2,12 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<unistd.h>
 
 int yyerror(char* s, ...);
 int yylex();
+extern int PRINTOKENS;
+extern FILE* yyin;
 %}
 
 %union {
@@ -154,25 +157,37 @@ int yyerror(char* s, ...) {
 }
 
 int main(int argc, char** argv) {
-  if(argc > 1) {
-    if (strcmp(argv[1], "-d") == 0) {
-      yydebug = 1;
-      argc--;
-      argv++;
+  int opt;
+  yyin = NULL;
+  while((opt=getopt(argc, argv, ":tf:")) != -1) {
+    switch(opt) {
+      case 't':
+        PRINTOKENS = 1;
+        break;
+      case 'f':
+        yyin = fopen(optarg, "r");
+        if(yyin == NULL) {
+          printf("Cant open the given file.\n");
+          exit(1);
+        }
+        printf("Parsing %s...\n", optarg);
+        break;
+      case ':':
+        printf("Option needs a filename.\n");
+        exit(1);
+      case '?':
+        printf("Unrecognised option.\n");
+        exit(1);
     }
   }
-
-  extern FILE* yyin;
-  if(argc > 1 && (yyin = fopen(argv[1], "r")) == NULL ) {
-    printf("Cant open the given file.\n");
+  if(yyin == NULL) {
+    printf("File name not given.\n");
     exit(1);
   }
 
-  do {
-    if(yyparse()) {
-      exit(0);
-    }
-  } while(!feof(yyin));
-  printf("success.\n");
+  if(!yyparse())
+    printf("Parsing Successful.\n");
+  else
+    printf("Parse error.\n");
   return 0;
 }
