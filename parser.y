@@ -8,6 +8,7 @@ int yyerror(char* s, ...);
 int yylex();
 extern int PRINTOKENS;
 extern FILE* yyin;
+extern int yylineno;
 %}
 
 %union {
@@ -152,7 +153,7 @@ expressionList: expression
 %%
 
 int yyerror(char* s, ...) {
-  printf("Parse error! : %s\n", s);
+  printf("Syntax error around line no %d\n", yylineno);
   return 1;
 }
 
