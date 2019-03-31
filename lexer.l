@@ -2,6 +2,7 @@
 #include<stdio.h>
 #include<string.h>
 #include "parser.tab.h"
+#include "symtab.h"
 
 int PRINTOKENS;
 
@@ -61,7 +62,7 @@ PROCEDURE { print(yytext); return PROCEDURE; }
 BEGIN { print(yytext); return _BEGIN; }
 MODULE { print(yytext); return MODULE; }
 
-[a-zA-Z][a-zA-Z0-9]* { print(yytext); yylval.strval = yytext; return ID; } 
+[a-zA-Z][a-zA-Z0-9]* { print(yytext); yylval.strval = strdup(yytext); return ID; } 
 [0-9]+ { print(yytext); yylval.intval = atoi(yytext); return VAL; }
 
 "(*"[.\n]*"*)"
