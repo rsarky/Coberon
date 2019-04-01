@@ -49,7 +49,7 @@ vars:
     | VAR varList
     ;
 assignList:
-          | assignList ID EQUALS expression ';' { printf("ID: %s\n", $2); lookup($2); }
+          | assignList ID EQUALS expression ';' 
           ;
 typeList:
         | typeList ID EQUALS type ';'
@@ -81,7 +81,7 @@ factorList:
           | factorList MOD factor
           | factorList AND factor
           ;
-factor: ID selector { if(!declared($1)) printf("Identifier %s not declared before use. Line %d\n", $1, yylineno); yyerror("error");}
+factor: ID selector 
       | VAL
       | '(' expression ')'
       | '~' factor
@@ -90,12 +90,12 @@ selector:
         | selector '.' ID
         | selector '[' expression ']'
         ;
-idList: idList ',' ID
-      | ID
+idList: idList ',' ID 
+      | ID 
       ;
 procedureDeclaration: procedureHeading ';' procedureBody
                     ;
-procedureHeading: PROCEDURE ID
+procedureHeading: PROCEDURE ID 
                 | PROCEDURE ID formalParameters
                 ;
 formalParameters: '(' ')'
