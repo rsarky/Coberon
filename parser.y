@@ -38,6 +38,7 @@ declarations: constants types vars procedureDeclarations
             ;
 constants: 
           | CONST assignList
+          | error
           ;
 types:
      | TYPE typeList
@@ -130,6 +131,7 @@ statement:
          | ifStatement
          | whileStatement
          | procedureCall
+         | error
          ;
 whileStatement: WHILE expression DO statementSequence END
 ifStatement: IF expression THEN statementSequence elseifs END 
