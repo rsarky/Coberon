@@ -4,13 +4,14 @@
 #include<string.h>
 #include<unistd.h>
 #include "symtab.h"
+#include "ast.h"
 
 int yyerror(char* s, ...);
 int yylex();
 extern int PRINTOKENS;
 extern FILE* yyin;
 extern int yylineno;
-
+void printNode(struct ast_node* node);
 %}
 
 %union {
@@ -18,6 +19,10 @@ extern int yylineno;
   char* strval;
   int subtok;
   struct symbol* id;
+  struct ast_node* node;
+  struct ast_module* moduleNode;
+  struct ast_declarations* declarationsNode;
+  struct ast_var_declaration* varDeclaration;
 }
 
 %token <strval> ID
@@ -27,27 +32,42 @@ extern int yylineno;
 %token OF THEN DO UNTIL END ELSE ELSIF IF WHILE REPEAT
 %token ARRAY RECORD CONST TYPE VAR PROCEDURE _BEGIN MODULE
 
+%type <moduleNode> module
+%type <declarationsNode> declarations
+%type <varDeclaration> vars
+%type <strval> type
+
 //TODO: Precedence and associativities.
 %left PLUS MINUS MULT DIV MOD AND OR
 %start module
-
 %%
-module: MODULE ID ';' declarations _BEGIN statementSequence END ID '.'
-      | MODULE ID ';' declarations END ID '.' 
-      ;
+
+//  module: MODULE ID ';' declarations _BEGIN statementSequence END ID '.'
+//        | MODULE ID ';' declarations END ID '.' 
+//        ;
+
+module:  MODULE ID ';' declarations END ID '.' { $$ = createModule($4, $2); printNode((struct ast_node*) $$); }; 
+
 
 // Note that order of declarations matter.
-declarations: constants types vars procedureDeclarations
-            ;
+// declarations: constants types vars procedureDeclarations
+//            ;
+
+declarations: vars { $$ = createDeclarations($1); };
+
 constants: 
           | CONST assignList
           ;
 types:
      | TYPE typeList
      ;
-vars:
-    | VAR varList
-    ;
+
+//    vars:
+//      | VAR varList 
+//      ;
+
+vars: VAR ID ':' type ';' { $$ = createVarDeclaration($4,$2); };
+
 assignList:
           | assignList ID EQUALS expression ';' 
           ;
@@ -108,7 +128,7 @@ fpSectionList: fpSection
 fpSection: VAR idList ':' type
          | idList ':' type
          ;
-type: ID
+type: ID { $$ = $1; }
     | arrayType
     | recordType
     ;
