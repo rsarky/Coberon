@@ -22,6 +22,7 @@ void printNode(struct ast_node* node);
   struct ast_node* node;
   struct ast_module* moduleNode;
   struct ast_declarations* declarationsNode;
+  struct ast_var_list* varList;
   struct ast_var_declaration* varDeclaration;
 }
 
@@ -34,14 +35,15 @@ void printNode(struct ast_node* node);
 
 %type <moduleNode> module
 %type <declarationsNode> declarations
-%type <varDeclaration> vars
+%type <varList> vars
 %type <strval> type
 
 //TODO: Precedence and associativities.
 %left PLUS MINUS MULT DIV MOD AND OR
 %start module
 %%
-
+// Note: All the commented stuff is the original grammar. 
+// Grammar has been tweaked to make life easier.
 //  module: MODULE ID ';' declarations _BEGIN statementSequence END ID '.'
 //        | MODULE ID ';' declarations END ID '.' 
 //        ;
@@ -62,11 +64,15 @@ types:
      | TYPE typeList
      ;
 
-//    vars:
-//      | VAR varList 
-//      ;
+/* vars: { $$ = NULL; } */
+/*     | VAR varList { $$ = $2; } */
+/*     ; */
 
-vars: VAR ID ':' type ';' { $$ = createVarDeclaration($4,$2); };
+vars: { $$ = NULL; }
+    | vars VAR ID ':' type ';' {
+      struct ast_var_declaration* d = createVarDeclaration($3, $5);
+      $$ =  createVarList($1 , d);
+    }
 
 assignList:
           | assignList ID EQUALS expression ';' 
@@ -74,9 +80,10 @@ assignList:
 typeList:
         | typeList ID EQUALS type ';'
         ;
-varList:
+varList: 
        | varList idList ':' type ';' 
        ;
+
 procedureDeclarations:
                      | procedureDeclarations procedureDeclaration ';'
                      ;
@@ -128,10 +135,14 @@ fpSectionList: fpSection
 fpSection: VAR idList ':' type
          | idList ':' type
          ;
-type: ID { $$ = $1; }
-    | arrayType
-    | recordType
-    ;
+/* type: ID */ 
+/*     | arrayType */
+/*     | recordType */
+/*     ; */
+
+
+type: ID ;
+
 arrayType: ARRAY expression OF type
          ;
 recordType: RECORD fieldList fields END

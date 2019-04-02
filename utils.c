@@ -2,17 +2,33 @@
 #include<stdio.h>
 #include<stdlib.h>
 
-static void printVarDeclarations(struct ast_var_declaration* var) {
-  printf("ID: %s\tTYPE: %s\n", var->id, var->dtype);
+static int tabCount = 0;
+static void printTabs() {
+  for(int i=0;i<tabCount;i++)
+    printf("\t");
 }
+static void printVarDeclaration(struct ast_var_declaration* decl) {
+  printf("ID: %s\tTYPE: %s\n", decl->id, decl->dtype);
+}
+static void printVarList(struct ast_var_list* vlist) {
+  printTabs();
+  printVarDeclaration(vlist->decl);
+  if(vlist->sibling)
+    printVarList(vlist->sibling);
+}
+
 static void printDeclarations(struct ast_declarations* decl) {
-  printf("Declarations Are:\n\t\t");
-  printVarDeclarations(decl->var_declarations);
+  printTabs();
+  printf("Declarations Are:\n");
+  tabCount++;
+  printVarList(decl->var_declarations);
+  tabCount--;
 }
 static void printModule(struct ast_module* mod) {
   printf("MODULE: %s\n", mod->id);
-  printf("\t");
+  tabCount++;
   printDeclarations(mod->declarations);
+  tabCount--;
 }
 
 void printNode(struct ast_node* node) {
@@ -30,8 +46,11 @@ void printNode(struct ast_node* node) {
     case AST_DECLARATIONS:
       printDeclarations(nodep);
       break;
+    case AST_VAR_LIST:
+      printVarList(nodep);
+      break;
     case AST_VAR_DECLARATION:
-      printVarDeclarations(nodep);
+      printVarDeclaration(nodep);
       break;
   }
   printf("\n\n\n");
