@@ -19,6 +19,16 @@ static void* alloc_node(enum astNodeType type) {
       break;
     case AST_VAR_LIST:
       size = sizeof(struct ast_var_list);
+      break;
+    case AST_STMT_LIST:
+      size = sizeof(struct ast_stmt_list);
+      break;
+    case AST_EXPRESSION:
+      size = sizeof(struct ast_expression);
+      break;
+    case AST_ASSIGNMENT:
+      size = sizeof(struct ast_assignment);
+      break;
   }
   node = calloc(1, size);
   if (node==NULL) {
@@ -29,10 +39,11 @@ static void* alloc_node(enum astNodeType type) {
   return node;
 }
 
-struct ast_module* createModule(struct ast_declarations* decls, char* id) {
+struct ast_module* createModule(struct ast_declarations* decls,struct ast_stmt_list* stmts, char* id) {
   struct ast_module* module;
   module = alloc_node(AST_MODULE);
   module->declarations = decls;
+  module->statements = stmts;
   module->id = strdup(id); 
   return module;
 }
@@ -70,4 +81,40 @@ struct ast_var_list* createVarList(
     return head;
   }
   return v;
+}
+
+struct ast_stmt_list* createStmtList(
+    struct ast_stmt_list* slist,
+    struct ast_node* n) {
+  struct ast_stmt_list* s;
+  s = alloc_node(AST_STMT_LIST);
+  s->stmt = n;
+  if(slist) {
+    struct ast_stmt_list* head = slist;
+    while(slist->sibling)
+      slist = slist->sibling;
+    slist->sibling = s;
+    return head;
+  }
+  return s;
+}
+
+struct ast_assignment* createAssignment(char* id, struct ast_expression* exp) {
+  struct ast_assignment* at;
+  at = alloc_node(AST_ASSIGNMENT);
+  at->id = strdup(id);
+  at->exp = exp;
+  return at;
+}
+
+struct ast_expression* createExpression(
+    enum opType op,
+    struct ast_expression* lexp,
+    struct ast_expression* rexp) {
+  struct ast_expression* exp;
+  exp = alloc_node(AST_EXPRESSION);
+  exp->op = op;
+  exp->leftexpr = lexp;
+  exp->rightexpr = rexp;
+  return exp;
 }

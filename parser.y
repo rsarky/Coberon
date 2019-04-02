@@ -24,6 +24,9 @@ void printNode(struct ast_node* node);
   struct ast_declarations* declarationsNode;
   struct ast_var_list* varList;
   struct ast_var_declaration* varDeclaration;
+  struct ast_stmt_list* statements;
+  struct ast_assignment* assignment;
+  struct ast_expression* expression;
 }
 
 %token <strval> ID
@@ -37,7 +40,9 @@ void printNode(struct ast_node* node);
 %type <declarationsNode> declarations
 %type <varList> vars
 %type <strval> type
-
+%type <statements> statementSequence
+%type <assignment> assignment
+%type <expression> expression aritexp term factor statement
 //TODO: Precedence and associativities.
 %left PLUS MINUS MULT DIV MOD AND OR
 %start module
@@ -48,7 +53,8 @@ void printNode(struct ast_node* node);
 //        | MODULE ID ';' declarations END ID '.' 
 //        ;
 
-module:  MODULE ID ';' declarations END ID '.' { $$ = createModule($4, $2); printNode((struct ast_node*) $$); }; 
+module:  MODULE ID ';' declarations _BEGIN statementSequence END ID '.' { $$ = createModule($4, $6, $2); printNode((struct ast_node*) $$); }
+        | MODULE ID ';' declarations END ID '.' ;
 
 
 // Note that order of declarations matter.
@@ -57,12 +63,12 @@ module:  MODULE ID ';' declarations END ID '.' { $$ = createModule($4, $2); prin
 
 declarations: vars { $$ = createDeclarations($1); };
 
-constants: 
-          | CONST assignList
-          ;
-types:
-     | TYPE typeList
-     ;
+/* constants: */ 
+/*           | CONST assignList */
+/*           ; */
+/* types: */
+/*      | TYPE typeList */
+/*      ; */
 
 /* vars: { $$ = NULL; } */
 /*     | VAR varList { $$ = $2; } */
@@ -74,45 +80,74 @@ vars: { $$ = NULL; }
       $$ =  createVarList($1 , d);
     }
 
-assignList:
-          | assignList ID EQUALS expression ';' 
-          ;
-typeList:
-        | typeList ID EQUALS type ';'
-        ;
-varList: 
-       | varList idList ':' type ';' 
-       ;
+/* assignList: */
+/*           | assignList ID EQUALS expression ';' */ 
+/*           ; */
+/* typeList: */
+/*         | typeList ID EQUALS type ';' */
+/*         ; */
+/* varList: */ 
+/*        | varList idList ':' type ';' */ 
+/*        ; */
 
-procedureDeclarations:
-                     | procedureDeclarations procedureDeclaration ';'
-                     ;
-expression: simpleExpression
-          | simpleExpression CMP simpleExpression
-          | simpleExpression EQUALS simpleExpression 
+/* procedureDeclarations: */
+/*                      | procedureDeclarations procedureDeclaration ';' */
+/*                      ; */
+
+/* Only Arithmetic Expressions */
+/* expression: simpleExpression */
+/*           | simpleExpression CMP simpleExpression */
+/*           | simpleExpression EQUALS simpleExpression */ 
+/*           ; */
+/* simpleExpression: term termList */
+/*                 | PLUS term termList */
+/*                 | MINUS term termList */
+/*                 ; */
+/* termList: */
+/*         | termList PLUS term */
+/*         | termList MINUS term */
+/*         | termList OR term */
+/*         ; */
+/* term: factor factorList */
+/*     ; */
+/* factorList: */
+/*           | factorList MULT factor */
+/*           | factorList DIV factor */
+/*           | factorList MOD factor */
+/*           | factorList AND factor */
+/*           ; */
+/* factor: ID selector */ 
+/*       | VAL */
+/*       | '(' expression ')' */
+/*       | '~' factor */
+/*       ; */
+
+expression: aritexp
           ;
-simpleExpression: term termList
-                | PLUS term termList
-                | MINUS term termList
-                ;
-termList:
-        | termList PLUS term
-        | termList MINUS term
-        | termList OR term
-        ;
-term: factor factorList
-    ;
-factorList:
-          | factorList MULT factor
-          | factorList DIV factor
-          | factorList MOD factor
-          | factorList AND factor
-          ;
-factor: ID selector 
-      | VAL
-      | '(' expression ')'
-      | '~' factor
-      ;
+aritexp : aritexp PLUS term {
+    $$ = createExpression(OP_ADD, $1, $3);
+} | aritexp MINUS term {
+    $$ = createExpression(OP_SUB, $1, $3);
+} | term ;
+
+term:
+    term MULT factor {
+    $$ = createExpression(OP_MULT, $1, $3);
+    }
+   | term DIV factor {
+    $$ = createExpression(OP_DIV, $1, $3);
+   }
+   | factor;
+
+factor: ID { 
+      $$ = createExpression(OP_PRIM_ID, NULL, NULL);
+      ($$)->primaryExpr.id = strdup($1);
+      }
+      | VAL {
+      $$ = createExpression(OP_PRIM_VAL, NULL, NULL);
+      ($$)->primaryExpr.intConst = $1;
+      };
+
 selector:
         | selector '.' ID
         | selector '[' expression ']'
@@ -157,14 +192,16 @@ procedureBody: declarations END ID
              | declarations _BEGIN statementSequence END ID
              ;
 statementSequence: statement 
-                 | statementSequence ';' statement
+                 | statementSequence ';' statement { $$ = createStmtList($1, (struct ast_node*) $3); }
                  ;
-statement: 
-         | assignment
-         | ifStatement
-         | whileStatement
-         | procedureCall
-         ;
+/* statement: */ 
+/*          | assignment */
+/*          | ifStatement */
+/*          | whileStatement */
+/*          | procedureCall */
+/*          ; */
+statement:
+         | assignment;
 whileStatement: WHILE expression DO statementSequence END
 ifStatement: IF expression THEN statementSequence elseifs END 
            | IF expression THEN statementSequence elseifs ELSE statementSequence END 
@@ -172,7 +209,7 @@ ifStatement: IF expression THEN statementSequence elseifs END
 elseifs:
        | elseifs ELSIF expression THEN statementSequence
        ;
-assignment: ID selector ASSIGN expression
+assignment: ID selector ASSIGN expression { $$ = createAssignment($1, $4); }
           ;
 procedureCall: ID selector
              | ID selector actualParameters
