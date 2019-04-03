@@ -55,8 +55,7 @@ struct ast_var_list {
 
 struct ast_var_declaration {
   enum astNodeType type;
-  char* id;
-  char* dtype;
+  struct symbol* var;
 };
 
 struct ast_stmt_list {

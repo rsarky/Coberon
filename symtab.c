@@ -5,7 +5,7 @@ void initTable() {
   for(sp=symTab; sp<&symTab[NSYM]; sp++) {
     sp->name = NULL;
     sp->value = 0;
-    sp->type = -1;
+    sp->type = NULL;
   }
 }
 

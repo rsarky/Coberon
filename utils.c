@@ -73,7 +73,7 @@ static void printStatements(struct ast_stmt_list* stmts) {
 }
 
 static void printVarDeclaration(struct ast_var_declaration* decl) {
-  printf("ID: %s\tTYPE: %s\n", decl->id, decl->dtype);
+  printf("ID: %s\tTYPE: %s\n", decl->var->name, decl->var->type);
 }
 static void printVarList(struct ast_var_list* vlist) {
   printTabs();

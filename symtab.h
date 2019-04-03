@@ -10,8 +10,7 @@ int yyerror(char* s, ...);
 struct symbol {
   char* name;
   int value;
-  int type;
-
+  char* type;
 };
 
 // Hash table using open addressing

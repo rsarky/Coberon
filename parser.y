@@ -61,7 +61,7 @@ module:  MODULE ID ';' declarations _BEGIN statementSequence END ID '.' { $$ = c
 // declarations: constants types vars procedureDeclarations
 //            ;
 
-declarations: vars { $$ = createDeclarations($1); };
+declarations: vars { $$ = createDeclarations($1); }
 
 /* constants: */ 
 /*           | CONST assignList */
@@ -78,7 +78,7 @@ vars: { $$ = NULL; }
     | vars VAR ID ':' type ';' {
       struct ast_var_declaration* d = createVarDeclaration($3, $5);
       $$ =  createVarList($1 , d);
-    }
+    };
 
 /* assignList: */
 /*           | assignList ID EQUALS expression ';' */ 
@@ -140,6 +140,8 @@ term:
    | factor;
 
 factor: ID { 
+      if(!declared($1))
+        yyerror("Variable not declared!");
       $$ = createExpression(OP_PRIM_ID, NULL, NULL);
       ($$)->primaryExpr.id = strdup($1);
       }
@@ -224,7 +226,7 @@ expressionList: expression
 %%
 
 int yyerror(char* s, ...) {
-  printf("Syntax error around line no %d\n", yylineno);
+  printf("Syntax error. Line No %d, Error: %s\n", yylineno, s);
   return 1;
 }
 
