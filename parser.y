@@ -54,7 +54,8 @@ void printNode(struct ast_node* node);
 //        ;
 
 module:  MODULE ID ';' declarations _BEGIN statementSequence END ID '.' { $$ = createModule($4, $6, $2); printNode((struct ast_node*) $$); }
-        | MODULE ID ';' declarations END ID '.' ;
+        | MODULE ID ';' declarations END ID '.'  { $$ = createModule($4, NULL, $2); }
+        ;
 
 
 // Note that order of declarations matter.
@@ -78,7 +79,8 @@ vars: { $$ = NULL; }
     | vars VAR ID ':' type ';' {
       struct ast_var_declaration* d = createVarDeclaration($3, $5);
       $$ =  createVarList($1 , d);
-    };
+    }
+    | vars error;
 
 /* assignList: */
 /*           | assignList ID EQUALS expression ';' */ 
@@ -195,6 +197,7 @@ procedureBody: declarations END ID
              ;
 statementSequence: statement 
                  | statementSequence ';' statement { $$ = createStmtList($1, (struct ast_node*) $3); }
+                 | statementSequence error
                  ;
 /* statement: */ 
 /*          | assignment */
@@ -226,7 +229,7 @@ expressionList: expression
 %%
 
 int yyerror(char* s, ...) {
-  printf("Syntax error. Line No %d, Error: %s\n", yylineno, s);
+  printf("Error. Line No %d. %s\n", yylineno, s);
   return 1;
 }
 
