@@ -1,7 +1,8 @@
 #include "ast.h"
+#include "symtab.h"
 #include<stdio.h>
 #include<stdlib.h>
-#include "ast.h"
+
 static int tabCount = 0;
 #define INDENT tabCount++
 #define DEINDENT tabCount--
@@ -100,7 +101,7 @@ static void printModule(struct ast_module* mod) {
 }
 
 void printNode(struct ast_node* node) {
-  printf("\n\n\n---PRINTING AST---\n");
+  printf("\n\n\n***PRINTING AST***\n");
   int type = node->type;
   void* nodep = node;
   switch(type) {
@@ -122,4 +123,16 @@ void printNode(struct ast_node* node) {
       break;
   }
   printf("\n\n\n");
+}
+
+void printSymbolTable() {
+  struct symbol sym;
+  //TODO Very inefficient.
+  printf("The contents of the symbol table are: \n");
+  for(int i=0;i<NSYM; i++) {
+    sym = symTab[i];
+    if(sym.name) {
+      printf("%s\t%s\n", sym.name, sym.type);
+    }
+  }
 }

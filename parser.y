@@ -5,13 +5,15 @@
 #include<unistd.h>
 #include "symtab.h"
 #include "ast.h"
+#include "utils.h"
 
 int yyerror(char* s, ...);
 int yylex();
 extern int PRINTOKENS;
+int PRINTAST = 0;
+int PRINTST = 0;
 extern FILE* yyin;
 extern int yylineno;
-void printNode(struct ast_node* node);
 %}
 
 %union {
@@ -48,8 +50,13 @@ void printNode(struct ast_node* node);
 %start module
 %%
 module:  MODULE ID ';' declarations _BEGIN statementSequence END ID '.' { 
-      $$ = createModule($4, $6, $2);
-      printNode((struct ast_node*) $$);
+        $$ = createModule($4, $6, $2);
+        if(PRINTAST) {
+          printNode((struct ast_node*) $$);
+        }
+        if(PRINTST) {
+          printSymbolTable();
+        }
       }
       | MODULE ID ';' declarations END ID '.'  { $$ = createModule($4, NULL, $2); }
       ;
@@ -115,10 +122,16 @@ int main(int argc, char** argv) {
   int opt;
   yyin = NULL;
   initTable();
-  while((opt=getopt(argc, argv, ":tf:")) != -1) {
+  while((opt=getopt(argc, argv, ":tasf:")) != -1) {
     switch(opt) {
       case 't':
         PRINTOKENS = 1;
+        break;
+      case 'a':
+        PRINTAST = 1;
+        break;
+      case 's':
+        PRINTST = 1;
         break;
       case 'f':
         yyin = fopen(optarg, "r");
@@ -141,7 +154,7 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
-if(!yyparse())
+  if(!yyparse())
     printf("Parsing Successful.\n");
   else
     printf("Parse error.\n");
