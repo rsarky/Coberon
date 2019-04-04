@@ -62,7 +62,7 @@ vars: { $$ = NULL; }
       struct ast_var_declaration* d = createVarDeclaration($3, $5);
       $$ =  createVarList($1 , d);
     }
-    | vars error
+    | vars error ';'
     ;
 
 expression: aritexp
@@ -93,7 +93,7 @@ factor: ID {
 type: ID
     ;
 
-statementSequence: { $$ = NULL; }
+statementSequence: statement { $$ = createStmtList(NULL, (struct ast_node*) $1); }
                  | statementSequence ';' statement { $$ = createStmtList($1, (struct ast_node*) $3); }
                  | statementSequence error
                  ;
