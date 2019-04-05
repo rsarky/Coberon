@@ -13,6 +13,9 @@ static void printTabs() {
     printf("\t");
 }
 
+static void printStatement(struct ast_node* stmt);
+static void printStatements(struct ast_stmt_list* stmts);
+
 static void printExpression(struct ast_expression* exp) {
   if(exp) {
     switch(exp->op) {
@@ -53,6 +56,20 @@ static void printAssignment(struct ast_assignment* asgt) {
   printf("\n");
 }
 
+static void printWhileStmt(struct ast_while* w) {
+  printTabs();
+  printf("WHILE STATEMENT:\n");
+  INDENT;
+  printTabs();
+  printf("Expression: ");
+  printExpression(w->condition);
+  printf("\n");
+  printTabs();
+  printf("Statements:\n");
+  printStatements(w->slist);
+  DEINDENT;
+}
+
 static void printStatement(struct ast_node* stmt) {
   if(!stmt)
     return;
@@ -62,6 +79,12 @@ static void printStatement(struct ast_node* stmt) {
       printTabs();
       printAssignment((struct ast_assignment*) stmt);
       DEINDENT;
+      break;
+    case AST_WHILE:
+      INDENT;
+      printWhileStmt((struct ast_while*) stmt);
+      DEINDENT;
+      break;
   }
 }
 

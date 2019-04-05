@@ -9,6 +9,7 @@ struct ast_var_list;
 struct ast_var_declaration;
 struct ast_stmt_list;
 struct ast_assignment;
+struct ast_while;
 struct ast_expression;
 
 enum astNodeType {
@@ -19,7 +20,8 @@ enum astNodeType {
   AST_VAR_DECLARATION,
   AST_STMT_LIST,
   AST_ASSIGNMENT,
-  AST_EXPRESSION
+  AST_EXPRESSION,
+  AST_WHILE
 };
 
 enum opType {
@@ -81,6 +83,12 @@ struct ast_expression {
    } primaryExpr;
 };
 
+struct ast_while {
+  enum astNodeType type;
+  struct ast_stmt_list* slist;
+  struct ast_expression* condition;
+};
+
 static void* alloc_node(enum astNodeType type);
 struct ast_module* createModule(
     struct ast_declarations* decls,
@@ -99,5 +107,8 @@ struct ast_expression* createExpression(
     enum opType op,
     struct ast_expression* l,
     struct ast_expression* r);
+struct ast_while* createWhileStmt(
+    struct ast_stmt_list* s,
+    struct ast_expression* exp);
 #endif
 

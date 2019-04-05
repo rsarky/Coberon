@@ -29,6 +29,7 @@ extern int yylineno;
   struct ast_stmt_list* statements;
   struct ast_assignment* assignment;
   struct ast_expression* expression;
+  struct ast_while* whileSt;
 }
 
 %token <strval> ID
@@ -42,10 +43,12 @@ extern int yylineno;
 %type <declarationsNode> declarations
 %type <varList> vars
 %type <strval> type
+%type <node> statement
 %type <statements> statementSequence
-%type <assignment> assignment statement
+%type <assignment> assignment 
 %type <expression> expression aritexp term factor 
-//TODO: Precedence and associativities.
+%type <whileSt> whileStatement
+
 %left PLUS MINUS MULT DIV MOD AND OR
 %start module
 %%
@@ -105,11 +108,15 @@ statementSequence: statement { $$ = createStmtList(NULL, (struct ast_node*) $1);
                  | statementSequence error
                  ;
 
-statement: assignment
+statement: assignment { $$ = (struct ast_node*) $1; }
+         | whileStatement { $$ = (struct ast_node*) $1; }
          ;
 
 assignment: ID ASSIGN expression { $$ = createAssignment($1, $3); }
           ;
+
+whileStatement: WHILE expression DO statementSequence END { $$ = createWhileStmt($4, $2); }
+              ;
 
 %%
 

@@ -2,6 +2,7 @@
 #include<string.h>
 #include"ast.h"
 #include"symtab.h"
+
 static void* alloc_node(enum astNodeType type) {
   struct ast_node* node;
   size_t size = 0;
@@ -28,6 +29,9 @@ static void* alloc_node(enum astNodeType type) {
       break;
     case AST_ASSIGNMENT:
       size = sizeof(struct ast_assignment);
+      break;
+    case AST_WHILE:
+      size = sizeof(struct ast_while);
       break;
   }
   node = calloc(1, size);
@@ -123,4 +127,14 @@ struct ast_expression* createExpression(
   exp->leftexpr = lexp;
   exp->rightexpr = rexp;
   return exp;
+}
+
+struct ast_while* createWhileStmt(
+    struct ast_stmt_list* s,
+    struct ast_expression* exp) {
+  struct ast_while* w;
+  w = alloc_node(AST_WHILE);
+  w->slist = s;
+  w->condition = exp;
+  return w;
 }
